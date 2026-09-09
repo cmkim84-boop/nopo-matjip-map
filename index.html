@@ -71,6 +71,11 @@
   #sheet .sub { color: #6B5C4E; font-size: 12px; margin-top: 4px; }
   #sheet hr { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
   #sheet .info { font-size: 14px; line-height: 1.8; }
+  #sheet .intro { font-size: 13px; line-height: 1.7; color: #4A3F35; margin-top: 10px; }
+  #sheet .amenities { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  #sheet .amenities span {
+    font-size: 11px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 20px; color: #6B5C4E;
+  }
   #sheet .actions { display: flex; gap: 8px; margin-top: 14px; }
   #sheet .actions a {
     flex: 1; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center;
@@ -115,7 +120,8 @@
   <button id="trackBtn">위치 추적 OFF</button>
 </div>
 <div id="legend">
-  <div><span class="dot" style="background: var(--brick);"></span>찐노포 (백년가게 인증 업체)</div>
+  <div><span class="dot" style="background: var(--orange);"></span>동네 터줏대감 10~20년</div>
+  <div><span class="dot" style="background: var(--brick);"></span>찐노포 20년~</div>
 </div>
 <div id="map"></div>
 <div id="sheet"></div>
@@ -134,6 +140,12 @@ function openSheet(shop) {
   const telHtml = shop.phone ? `<a href="tel:${shop.phone}">${shop.phone}</a>` : "정보 없음";
   const shareUrl = `https://map.kakao.com/link/map/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
   const badgeColor = shop.grade === "찐노포" ? "var(--brick)" : "var(--orange)";
+  const yearsText = shop.yearsOpen ? `${shop.yearsOpen}년째 영업` : "";
+  const hoursHtml = shop.hours ? `<br>영업시간: ${shop.hours}` : "";
+  const introHtml = shop.intro ? `<div class="intro">${shop.intro}</div>` : "";
+  const amenitiesHtml = shop.amenities && shop.amenities.length
+    ? `<div class="amenities">${shop.amenities.map(a => `<span>${a}</span>`).join("")}</div>`
+    : "";
   sheet.innerHTML = `
     <div class="row">
       <div>
@@ -141,12 +153,14 @@ function openSheet(shop) {
           <span class="name">${shop.name}</span>
           <span class="badge" style="background:${badgeColor};">${shop.grade}</span>
         </div>
-        <div class="sub">${shop.category}</div>
+        <div class="sub">${yearsText}</div>
       </div>
       <button class="close" aria-label="닫기">×</button>
     </div>
     <hr>
-    <div class="info">${shop.address}<br>전화: ${telHtml}</div>
+    <div class="info">${shop.address}<br>전화: ${telHtml}${hoursHtml}</div>
+    ${introHtml}
+    ${amenitiesHtml}
     <div class="actions">
       <a class="dirBtn" href="${dirUrl}" target="_blank">길찾기</a>
       <a class="shareBtn" href="${shareUrl}" target="_blank">카카오맵 공유</a>
