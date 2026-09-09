@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>노포맛집 지도</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -12,47 +13,76 @@
     --ink: #2B2420;
     --line: #D8C6AC;
   }
-  html, body { margin: 0; height: 100%; font-family: "Noto Sans KR", sans-serif; color: var(--ink); }
-  #map { width: 100%; height: 100%; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100dvh; overflow: hidden;
+    font-family: "Noto Sans KR", sans-serif; color: var(--ink);
+  }
+  body { display: flex; flex-direction: column; }
+  #map { flex: 1; min-height: 0; width: 100%; }
 
   #header {
-    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
     background: var(--brick); border-bottom: 3px solid var(--ink);
-    padding: 14px 18px 16px; box-shadow: 0 3px 8px rgba(43,36,32,.25);
+    padding: 10px 14px 12px; padding-top: max(10px, env(safe-area-inset-top));
+    box-shadow: 0 3px 8px rgba(43,36,32,.25); flex-shrink: 0;
   }
   #header h1 {
-    margin: 0; font-family: "Black Han Sans", sans-serif; font-size: 22px;
+    margin: 0; font-family: "Black Han Sans", sans-serif; font-size: 19px;
     color: var(--cream); letter-spacing: .5px; font-weight: normal;
   }
   #header p {
-    margin: 2px 0 0; font-family: "Noto Serif KR", serif; font-size: 12px; color: #F0C9A9;
+    margin: 2px 0 0; font-family: "Noto Serif KR", serif; font-size: 11px; color: #F0C9A9;
   }
+
+  #toolbar {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    background: var(--cream); border-bottom: 2px solid var(--ink);
+    padding: 8px 10px; overflow-x: auto;
+  }
+  #toolbar button {
+    font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 13px;
+    min-height: 40px; padding: 0 12px; border: 2px solid var(--ink); border-radius: 20px;
+    background: var(--cream); color: var(--ink); cursor: pointer; flex-shrink: 0;
+    white-space: nowrap;
+  }
+  #toolbar button.active { background: var(--brick); color: var(--cream); border-color: var(--brick); }
+  #trackBtn { margin-left: auto; }
+  #trackBtn.on { background: var(--brick); color: var(--cream); border-color: var(--brick); }
 
   #legend {
-    position: absolute; top: 78px; right: 12px; z-index: 10;
-    background: var(--cream); border: 2px solid var(--ink); border-radius: 4px;
-    padding: 8px 10px; font-size: 11px; line-height: 1.8;
-    box-shadow: 0 2px 4px rgba(43,36,32,.2);
+    display: flex; gap: 14px; flex-shrink: 0;
+    background: var(--cream); border-bottom: 2px solid var(--line);
+    padding: 6px 12px; font-size: 11px;
   }
-  #legend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+  #legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
 
-  #controls {
-    position: absolute; top: 78px; left: 12px; z-index: 10; width: 168px;
-    background: var(--cream); padding: 12px; border: 2px solid var(--ink); border-radius: 6px;
-    box-shadow: 0 3px 6px rgba(43,36,32,.25);
+  #sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    background: var(--cream); border-top: 3px solid var(--ink);
+    border-radius: 14px 14px 0 0; box-shadow: 0 -4px 10px rgba(43,36,32,.3);
+    padding: 16px 18px calc(20px + env(safe-area-inset-bottom));
+    transform: translateY(110%); transition: transform .25s ease-out;
+    max-height: 45vh; overflow-y: auto;
   }
-  #controls .label { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
-  #controls .radiusRow { display: flex; gap: 6px; margin-bottom: 10px; }
-  #controls hr { border: none; border-top: 1px solid var(--line); margin: 8px 0; }
-  #controls button {
-    font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 12px;
-    padding: 8px 6px; border: 2px solid var(--ink); border-radius: 4px;
-    background: var(--cream); color: var(--ink); cursor: pointer;
+  #sheet.open { transform: translateY(0); }
+  #sheet .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  #sheet .name { font-family: "Noto Serif KR", serif; font-weight: 700; font-size: 18px; }
+  #sheet .badge { background: var(--brick); color: var(--cream); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 3px; white-space: nowrap; }
+  #sheet .sub { color: #6B5C4E; font-size: 12px; margin-top: 4px; }
+  #sheet hr { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
+  #sheet .info { font-size: 14px; line-height: 1.8; }
+  #sheet .actions { display: flex; gap: 8px; margin-top: 14px; }
+  #sheet .actions a {
+    flex: 1; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none;
   }
-  #controls .radiusRow button { flex: 1; }
-  #controls button.active { background: var(--brick); color: var(--cream); border-color: var(--brick); }
-  #trackBtn { width: 100%; }
-  #trackBtn.on { background: var(--brick); color: var(--cream); border-color: var(--brick); }
+  #sheet .dirBtn { border: 2px solid var(--ink); color: var(--ink); }
+  #sheet .shareBtn { background: var(--brick); border: 2px solid var(--brick); color: var(--cream); }
+  #sheet .close {
+    width: 32px; height: 32px; flex-shrink: 0; border: 2px solid var(--ink); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700;
+    background: none; color: var(--ink); cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -60,21 +90,18 @@
   <h1>노포맛집지도</h1>
   <p>우연히 만나는 동네 노포</p>
 </div>
+<div id="toolbar">
+  <button data-radius="500" class="active">500m</button>
+  <button data-radius="750">750m</button>
+  <button data-radius="1000">1000m</button>
+  <button id="trackBtn">위치 추적 OFF</button>
+</div>
 <div id="legend">
   <div><span class="dot" style="background: var(--orange);"></span>동네 터줏대감 10~20년</div>
   <div><span class="dot" style="background: var(--brick);"></span>찐노포 20년~</div>
 </div>
-<div id="controls">
-  <div class="label">반경</div>
-  <div class="radiusRow">
-    <button data-radius="500" class="active">500m</button>
-    <button data-radius="750">750m</button>
-    <button data-radius="1000">1000m</button>
-  </div>
-  <hr>
-  <button id="trackBtn">위치 추적 OFF</button>
-</div>
 <div id="map"></div>
+<div id="sheet"></div>
 
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4049230daf71eeaa331a033be7ed6920&autoload=false&libraries=services"></script>
 <script>
@@ -83,7 +110,38 @@ const DEFAULT_CENTER = { lat: 37.3800, lng: 126.8030 }; // 시흥시청 근처 f
 let map, myPos = DEFAULT_CENTER, radius = 500, tracking = false, watchId = null;
 let allShops = [];
 let markers = [];
-let infowindow;
+const sheet = document.getElementById("sheet");
+
+function openSheet(shop) {
+  const dirUrl = `https://map.kakao.com/link/to/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
+  const telHtml = shop.phone ? `<a href="tel:${shop.phone}">${shop.phone}</a>` : "정보 없음";
+  const shareUrl = `https://map.kakao.com/link/map/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
+  const badgeColor = shop.grade === "찐노포" ? "var(--brick)" : "var(--orange)";
+  sheet.innerHTML = `
+    <div class="row">
+      <div>
+        <div class="row" style="align-items:center;gap:8px;">
+          <span class="name">${shop.name}</span>
+          <span class="badge" style="background:${badgeColor};">${shop.grade}</span>
+        </div>
+        <div class="sub">${shop.category} · ${shop.yearsOpen}년째 영업</div>
+      </div>
+      <button class="close" aria-label="닫기">×</button>
+    </div>
+    <hr>
+    <div class="info">${shop.address}<br>전화: ${telHtml}</div>
+    <div class="actions">
+      <a class="dirBtn" href="${dirUrl}" target="_blank">길찾기</a>
+      <a class="shareBtn" href="${shareUrl}" target="_blank">카카오맵 공유</a>
+    </div>
+  `;
+  sheet.querySelector(".close").addEventListener("click", closeSheet);
+  sheet.classList.add("open");
+}
+
+function closeSheet() {
+  sheet.classList.remove("open");
+}
 
 function distanceM(lat1, lng1, lat2, lng2) {
   const R = 6371000;
@@ -119,28 +177,7 @@ function renderMarkers() {
       map,
     });
 
-    kakao.maps.event.addListener(marker, "click", () => {
-      const dirUrl = `https://map.kakao.com/link/to/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
-      const telHtml = shop.phone ? `<a href="tel:${shop.phone}">${shop.phone}</a>` : "정보 없음";
-      const shareUrl = `https://map.kakao.com/link/map/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
-      const badgeColor = shop.grade === "찐노포" ? "var(--brick)" : "var(--orange)";
-      infowindow.setContent(`
-        <div style="padding:14px 16px;min-width:230px;max-width:260px;font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.7;color:var(--ink);background:var(--cream);">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <span style="font-family:'Noto Serif KR',serif;font-weight:700;font-size:16px;">${shop.name}</span>
-            <span style="background:${badgeColor};color:var(--cream);font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;">${shop.grade}</span>
-          </div>
-          <div style="color:#6B5C4E;font-size:12px;margin-top:2px;">${shop.category} · ${shop.yearsOpen}년째 영업</div>
-          <hr style="border:none;border-top:1px solid var(--line);margin:10px 0;">
-          <div>${shop.address}<br>전화: ${telHtml}</div>
-          <div style="display:flex;gap:6px;margin-top:12px;">
-            <a href="${dirUrl}" target="_blank" style="flex:1;text-align:center;border:2px solid var(--ink);border-radius:4px;padding:6px 4px;font-weight:700;font-size:12px;text-decoration:none;color:var(--ink);">길찾기</a>
-            <a href="${shareUrl}" target="_blank" style="flex:1;text-align:center;background:var(--brick);border:2px solid var(--brick);border-radius:4px;padding:6px 4px;font-weight:700;font-size:12px;text-decoration:none;color:var(--cream);">카카오맵 공유</a>
-          </div>
-        </div>
-      `);
-      infowindow.open(map, marker);
-    });
+    kakao.maps.event.addListener(marker, "click", () => openSheet(shop));
 
     markers.push(marker);
   });
@@ -159,7 +196,7 @@ function initMap() {
     center: new kakao.maps.LatLng(myPos.lat, myPos.lng),
     level: 5,
   });
-  infowindow = new kakao.maps.InfoWindow({ removable: true });
+  kakao.maps.event.addListener(map, "click", closeSheet);
 
   fetch("data/노포_시흥시.json")
     .then(r => r.json())
@@ -178,9 +215,9 @@ function initMap() {
   }
 }
 
-document.querySelectorAll("#controls button[data-radius]").forEach(btn => {
+document.querySelectorAll("#toolbar button[data-radius]").forEach(btn => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll("#controls button[data-radius]").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll("#toolbar button[data-radius]").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     radius = Number(btn.dataset.radius);
     renderMarkers();
