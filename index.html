@@ -33,6 +33,15 @@
   #header p {
     margin: 2px 0 0; font-family: "Noto Serif KR", serif; font-size: 11px; color: #F0C9A9;
   }
+  #header { position: relative; }
+  #authArea { position: absolute; top: 10px; right: 14px; }
+  #authArea button {
+    font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 11px;
+    padding: 6px 10px; border: 1.5px solid var(--cream); border-radius: 16px;
+    background: transparent; color: var(--cream); cursor: pointer;
+  }
+  #authArea .userInfo { display: flex; align-items: center; gap: 6px; }
+  #authArea img { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--cream); }
 
   #toolbar {
     display: flex; align-items: center; gap: 8px; flex-shrink: 0;
@@ -56,6 +65,18 @@
   }
   #legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
 
+  #categoryBar {
+    display: flex; gap: 6px; flex-shrink: 0;
+    background: var(--cream); border-bottom: 2px solid var(--line);
+    padding: 8px 10px; overflow-x: auto;
+  }
+  #categoryBar button {
+    font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 12px;
+    min-height: 32px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 16px;
+    background: #fff; color: #6B5C4E; cursor: pointer; flex-shrink: 0; white-space: nowrap;
+  }
+  #categoryBar button.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
   #sheet {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
     background: var(--cream); border-top: 3px solid var(--ink);
@@ -77,12 +98,17 @@
     font-size: 11px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 20px; color: #6B5C4E;
   }
   #sheet .actions { display: flex; gap: 8px; margin-top: 14px; }
-  #sheet .actions a {
+  #sheet .actions a, #sheet .actions button {
     flex: 1; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center;
-    border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none;
+    border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer;
+    font-family: "Noto Sans KR", sans-serif;
   }
-  #sheet .dirBtn { border: 2px solid var(--ink); color: var(--ink); }
+  #sheet .dirBtn { border: 2px solid var(--ink); color: var(--ink); background: none; }
   #sheet .shareBtn { background: var(--brick); border: 2px solid var(--brick); color: var(--cream); }
+  #sheet .favBtn { border: 2px solid var(--brick); color: var(--brick); background: none; }
+  #sheet .favBtn.on { background: var(--brick); color: var(--cream); }
+  #sheet .visitBtn { border: 2px solid var(--ink); color: var(--ink); background: none; }
+  #sheet .visitBtn.on { background: var(--ink); color: var(--cream); }
   #sheet .close {
     width: 32px; height: 32px; flex-shrink: 0; border: 2px solid var(--ink); border-radius: 50%;
     display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700;
@@ -112,6 +138,7 @@
 <div id="header">
   <h1>노포맛집지도</h1>
   <p>우연히 만나는 동네 노포</p>
+  <div id="authArea"></div>
 </div>
 <div id="toolbar">
   <button data-radius="500" class="active">500m</button>
@@ -123,16 +150,117 @@
   <div><span class="dot" style="background: var(--orange);"></span>동네 터줏대감 10~20년</div>
   <div><span class="dot" style="background: var(--brick);"></span>찐노포 20년~</div>
 </div>
+<div id="categoryBar">
+  <button data-category="all" class="active">전체</button>
+  <button data-category="한식">한식</button>
+  <button data-category="고기/구이">고기/구이</button>
+  <button data-category="해산물">해산물</button>
+  <button data-category="일식">일식</button>
+  <button data-category="중식">중식</button>
+  <button data-category="양식">양식</button>
+  <button data-category="분식/면류">분식/면류</button>
+  <button data-category="카페/베이커리">카페/베이커리</button>
+  <button data-category="기타">기타</button>
+  <button id="favOnlyBtn" data-category="__fav__">★ 즐겨찾기만</button>
+</div>
 <div id="map"></div>
 <div id="sheet"></div>
 
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4049230daf71eeaa331a033be7ed6920&autoload=false&libraries=services"></script>
-<script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4049230daf71eeaa331a033be7ed6920&autoload=false&libraries=services,clusterer"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, deleteDoc, getDoc, getDocs, collection, serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDC97LjxznZ_pEUP0RkRxHMZ4UQul9HiEA",
+  authDomain: "nopo-matjip-map.firebaseapp.com",
+  projectId: "nopo-matjip-map",
+  storageBucket: "nopo-matjip-map.firebasestorage.app",
+  messagingSenderId: "1009076485496",
+  appId: "1:1009076485496:web:7438ed95e1a738f8ca1c8d",
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const googleProvider = new GoogleAuthProvider();
+
+let currentUser = null;
+let favoriteIds = new Set();
+let visitCounts = {};
+
+const authArea = document.getElementById("authArea");
+
+function renderAuthArea() {
+  if (currentUser) {
+    authArea.innerHTML = `
+      <div class="userInfo">
+        <img src="${currentUser.photoURL}" alt="">
+        <button id="logoutBtn">로그아웃</button>
+      </div>
+    `;
+    document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+  } else {
+    authArea.innerHTML = `<button id="loginBtn">Google로 로그인</button>`;
+    document.getElementById("loginBtn").addEventListener("click", () => signInWithPopup(auth, googleProvider));
+  }
+}
+
+async function loadUserData() {
+  favoriteIds = new Set();
+  visitCounts = {};
+  if (!currentUser) return;
+  const favSnap = await getDocs(collection(db, "users", currentUser.uid, "favorites"));
+  favSnap.forEach(d => favoriteIds.add(d.id));
+  const visitSnap = await getDocs(collection(db, "users", currentUser.uid, "visits"));
+  visitSnap.forEach(d => { visitCounts[d.id] = d.data().count || 0; });
+}
+
+async function toggleFavorite(shop) {
+  if (!currentUser) { signInWithPopup(auth, googleProvider); return; }
+  const ref = doc(db, "users", currentUser.uid, "favorites", shop.id);
+  if (favoriteIds.has(shop.id)) {
+    await deleteDoc(ref);
+    favoriteIds.delete(shop.id);
+  } else {
+    await setDoc(ref, { name: shop.name, address: shop.address, addedAt: serverTimestamp() });
+    favoriteIds.add(shop.id);
+  }
+  openSheet(shop);
+  if (favOnly) renderMarkers();
+}
+
+async function markVisited(shop) {
+  if (!currentUser) { signInWithPopup(auth, googleProvider); return; }
+  const ref = doc(db, "users", currentUser.uid, "visits", shop.id);
+  const snap = await getDoc(ref);
+  const nextCount = (snap.exists() ? snap.data().count || 0 : 0) + 1;
+  await setDoc(ref, { name: shop.name, count: nextCount, lastVisitedAt: serverTimestamp() });
+  visitCounts[shop.id] = nextCount;
+  openSheet(shop);
+}
+
+renderAuthArea();
+
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  renderAuthArea();
+  await loadUserData();
+  if (clusterer) renderMarkers();
+});
+
 const DEFAULT_CENTER = { lat: 37.3800, lng: 126.8030 }; // 시흥시청 근처 fallback
 
 let map, myPos = DEFAULT_CENTER, radius = 500, tracking = false, watchId = null;
+let category = "all";
+let favOnly = false;
 let allShops = [];
 let markers = [];
+let clusterer;
 const sheet = document.getElementById("sheet");
 
 function openSheet(shop) {
@@ -146,6 +274,9 @@ function openSheet(shop) {
   const amenitiesHtml = shop.amenities && shop.amenities.length
     ? `<div class="amenities">${shop.amenities.map(a => `<span>${a}</span>`).join("")}</div>`
     : "";
+  const isFav = favoriteIds.has(shop.id);
+  const visitCount = visitCounts[shop.id] || 0;
+  const visitText = visitCount > 0 ? `다녀왔어요 (${visitCount})` : "다녀왔어요";
   sheet.innerHTML = `
     <div class="row">
       <div>
@@ -162,11 +293,17 @@ function openSheet(shop) {
     ${introHtml}
     ${amenitiesHtml}
     <div class="actions">
+      <button class="favBtn${isFav ? " on" : ""}">${isFav ? "★ 즐겨찾기됨" : "☆ 즐겨찾기"}</button>
+      <button class="visitBtn${visitCount > 0 ? " on" : ""}">${visitText}</button>
+    </div>
+    <div class="actions">
       <a class="dirBtn" href="${dirUrl}" target="_blank">길찾기</a>
       <a class="shareBtn" href="${shareUrl}" target="_blank">카카오맵 공유</a>
     </div>
   `;
   sheet.querySelector(".close").addEventListener("click", closeSheet);
+  sheet.querySelector(".favBtn").addEventListener("click", () => toggleFavorite(shop));
+  sheet.querySelector(".visitBtn").addEventListener("click", () => markVisited(shop));
   sheet.classList.add("open");
 }
 
@@ -221,19 +358,22 @@ function updateLocationOverlay(lat, lng) {
 }
 
 function clearMarkers() {
-  markers.forEach(m => m.setMap(null));
+  clusterer.clear();
   markers = [];
 }
 
 function renderMarkers() {
   clearMarkers();
-  const inRange = allShops.filter(s => distanceM(myPos.lat, myPos.lng, s.lat, s.lng) <= radius);
+  const inRange = allShops.filter(s =>
+    distanceM(myPos.lat, myPos.lng, s.lat, s.lng) <= radius &&
+    (category === "all" || s.foodCategory === category) &&
+    (!favOnly || favoriteIds.has(s.id))
+  );
 
   inRange.forEach(shop => {
     const marker = new kakao.maps.Marker({
       position: new kakao.maps.LatLng(shop.lat, shop.lng),
       image: markerImage(shop.grade),
-      map,
     });
 
     kakao.maps.event.addListener(marker, "click", () => openSheet(shop));
@@ -241,6 +381,7 @@ function renderMarkers() {
     markers.push(marker);
   });
 
+  clusterer.addMarkers(markers);
   document.title = `노포맛집 지도 (${inRange.length}곳)`;
 }
 
@@ -257,6 +398,12 @@ function initMap() {
     level: 5,
   });
   kakao.maps.event.addListener(map, "click", closeSheet);
+  clusterer = new kakao.maps.MarkerClusterer({
+    map,
+    averageCenter: true,
+    minLevel: 6,
+    gridSize: 60,
+  });
 
   fetch("data/노포_백년가게.json")
     .then(r => r.json())
@@ -274,6 +421,22 @@ function initMap() {
     renderMarkers();
   }
 }
+
+document.querySelectorAll("#categoryBar button[data-category]:not(#favOnlyBtn)").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#categoryBar button[data-category]:not(#favOnlyBtn)").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    category = btn.dataset.category;
+    renderMarkers();
+  });
+});
+
+document.getElementById("favOnlyBtn").addEventListener("click", function () {
+  if (!currentUser) { signInWithPopup(auth, googleProvider); return; }
+  favOnly = !favOnly;
+  this.classList.toggle("active", favOnly);
+  renderMarkers();
+});
 
 document.querySelectorAll("#toolbar button[data-radius]").forEach(btn => {
   btn.addEventListener("click", () => {

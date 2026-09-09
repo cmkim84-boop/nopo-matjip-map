@@ -1,3 +1,4 @@
+import hashlib
 import html
 import json
 import os
@@ -16,6 +17,26 @@ TODAY = date(2026, 9, 10)
 KAKAO_REST_KEY = os.environ.get("KAKAO_REST_KEY")
 if not KAKAO_REST_KEY:
     sys.exit("환경변수 KAKAO_REST_KEY를 설정하세요 (카카오 개발자센터 > 플랫폼 키 > REST API 키)")
+
+CATEGORY_RULES = [
+    ("카페/베이커리", ["제과", "제빵", "빵", "케이크", "카페", "커피", "한과", "과자", "찐빵", "호두과자"]),
+    ("중식", ["중식", "중화", "짜장", "짬뽕", "탕수육", "중국요리", "중국음식"]),
+    ("일식", ["일식", "초밥", "스시", "돈가스", "돈까스", "라멘", "사시미", "복어", "메밀"]),
+    ("양식", ["양식", "스테이크", "경양식", "파스타", "피자"]),
+    ("해산물", ["회", "활어", "물회", "조개", "장어", "해물", "수산물", "젓갈", "게장", "전복", "굴", "낙지", "매운탕"]),
+    ("고기/구이", ["구이", "삼겹살", "생고기", "한우", "곱창", "막창", "갈비", "불고기", "육회", "차돌"]),
+    ("한식", ["한식", "국밥", "해장국", "백반", "정식", "찌개", "전골", "곰탕", "설렁탕", "육개장",
+              "비빔밥", "보쌈", "족발", "수육", "삼계탕", "백숙", "닭볶음탕", "청국장", "된장", "순대", "추어탕"]),
+    ("분식/면류", ["분식", "떡볶이", "칼국수", "국수", "냉면", "막국수", "만두", "라면", "우동", "쫄면"]),
+]
+
+
+def categorize(name, intro):
+    text = f"{name} {intro or ''}"
+    for label, keywords in CATEGORY_RULES:
+        if any(k in text for k in keywords):
+            return label
+    return "기타"
 
 
 def fetch(url, data=None):
@@ -91,11 +112,17 @@ def parse_detail(rcpn_no, page_html):
     else:
         grade = "찐노포"  # 창업일 파싱 실패 시에도 백년가게 인증 자체가 20년 이상 요건이므로 찐노포로 처리
 
+    clean_intro = intro.replace("\n", " ").strip() if intro else None
+    # 재수집 때마다 rcpnNo가 바뀔 수 있어, 즐겨찾기/방문기록 키가 안정적으로 유지되도록
+    # 이름+주소 기반 해시를 id로 사용한다.
+    stable_id = hashlib.md5((name + address).encode("utf-8")).hexdigest()[:12]
+
     return {
-        "rcpnNo": rcpn_no,
+        "id": stable_id,
         "name": name,
         "address": address,
         "bizType": biz_type,
+        "foodCategory": categorize(name, clean_intro),
         "openedDate": opened.isoformat() if opened else None,
         "yearsOpen": years_open,
         "grade": grade,
@@ -103,7 +130,7 @@ def parse_detail(rcpn_no, page_html):
         "phone": phone.replace(" ", "") if phone else None,
         "homepage": homepage or None,
         "amenities": amenities,
-        "intro": intro.replace("\n", " ").strip() if intro else None,
+        "intro": clean_intro,
     }
 
 
@@ -146,7 +173,6 @@ def main():
             skipped += 1
             continue
         shop["lat"], shop["lng"] = round(coord[0], 6), round(coord[1], 6)
-        del shop["rcpnNo"]
         results.append(shop)
 
         if (i + 1) % 50 == 0:
