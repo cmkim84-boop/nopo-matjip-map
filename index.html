@@ -97,8 +97,7 @@
   <button id="trackBtn">위치 추적 OFF</button>
 </div>
 <div id="legend">
-  <div><span class="dot" style="background: var(--orange);"></span>동네 터줏대감 10~20년</div>
-  <div><span class="dot" style="background: var(--brick);"></span>찐노포 20년~</div>
+  <div><span class="dot" style="background: var(--brick);"></span>찐노포 (백년가게 인증 업체)</div>
 </div>
 <div id="map"></div>
 <div id="sheet"></div>
@@ -124,7 +123,7 @@ function openSheet(shop) {
           <span class="name">${shop.name}</span>
           <span class="badge" style="background:${badgeColor};">${shop.grade}</span>
         </div>
-        <div class="sub">${shop.category} · ${shop.yearsOpen}년째 영업</div>
+        <div class="sub">${shop.category}</div>
       </div>
       <button class="close" aria-label="닫기">×</button>
     </div>
@@ -198,13 +197,12 @@ function initMap() {
   });
   kakao.maps.event.addListener(map, "click", closeSheet);
 
-  Promise.all([
-    fetch("data/노포_시흥시.json").then(r => r.json()),
-    fetch("data/노포_서울.json").then(r => r.json()),
-  ]).then(([siheung, seoul]) => {
-    allShops = siheung.concat(seoul);
-    renderMarkers();
-  });
+  fetch("data/노포_백년가게.json")
+    .then(r => r.json())
+    .then(data => {
+      allShops = data;
+      renderMarkers();
+    });
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
