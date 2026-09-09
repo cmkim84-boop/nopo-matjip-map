@@ -198,12 +198,13 @@ function initMap() {
   });
   kakao.maps.event.addListener(map, "click", closeSheet);
 
-  fetch("data/노포_시흥시.json")
-    .then(r => r.json())
-    .then(data => {
-      allShops = data;
-      renderMarkers();
-    });
+  Promise.all([
+    fetch("data/노포_시흥시.json").then(r => r.json()),
+    fetch("data/노포_서울.json").then(r => r.json()),
+  ]).then(([siheung, seoul]) => {
+    allShops = siheung.concat(seoul);
+    renderMarkers();
+  });
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
