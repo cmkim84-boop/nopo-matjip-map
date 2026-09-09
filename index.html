@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>노포맛집 지도</title>
+<style>
+  html, body { margin: 0; height: 100%; font-family: sans-serif; }
+  #map { width: 100%; height: 100%; }
+  #controls {
+    position: absolute; top: 10px; left: 10px; z-index: 10;
+    background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  #controls button { margin-right: 4px; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; }
+  #controls button.active { background: #333; color: #fff; }
+  #trackBtn.on { background: #2b8a3e; color: #fff; }
+</style>
+</head>
+<body>
+<div id="controls">
+  반경:
+  <button data-radius="500" class="active">500m</button>
+  <button data-radius="750">750m</button>
+  <button data-radius="1000">1000m</button>
+  <button id="trackBtn">위치 추적 OFF</button>
+</div>
+<div id="map"></div>
+
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4049230daf71eeaa331a033be7ed6920&autoload=false&libraries=services"></script>
+<script>
+const DEFAULT_CENTER = { lat: 37.3800, lng: 126.8030 }; // 시흥시청 근처 fallback
+
+let map, myPos = DEFAULT_CENTER, radius = 500, tracking = false, watchId = null;
+let allShops = [];
+let markers = [];
+let infowindow;
+
+function distanceM(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function markerImage(grade) {
+  const color = grade === "찐노포" ? "FF3B30" : "FF9500";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40">
+    <path d="M16 0C7 0 0 7 0 16c0 12 16 24 16 24s16-12 16-24C32 7 25 0 16 0z" fill="#${color}"/>
+    <circle cx="16" cy="16" r="7" fill="#fff"/>
+  </svg>`;
+  const url = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
+  return new kakao.maps.MarkerImage(url, new kakao.maps.Size(32, 40), { offset: new kakao.maps.Point(16, 40) });
+}
+
+function clearMarkers() {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+}
+
+function renderMarkers() {
+  clearMarkers();
+  const inRange = allShops.filter(s => distanceM(myPos.lat, myPos.lng, s.lat, s.lng) <= radius);
+
+  inRange.forEach(shop => {
+    const marker = new kakao.maps.Marker({
+      position: new kakao.maps.LatLng(shop.lat, shop.lng),
+      image: markerImage(shop.grade),
+      map,
+    });
+
+    kakao.maps.event.addListener(marker, "click", () => {
+      const dirUrl = `https://map.kakao.com/link/to/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
+      const telHtml = shop.phone ? `<a href="tel:${shop.phone}">${shop.phone}</a>` : "정보 없음";
+      const shareUrl = `https://map.kakao.com/link/map/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
+      infowindow.setContent(`
+        <div style="padding:10px;min-width:220px;font-size:13px;line-height:1.6;">
+          <b>${shop.name}</b> <span style="color:#e8590c;">[${shop.grade}]</span><br>
+          ${shop.category} · ${shop.yearsOpen}년째 영업<br>
+          ${shop.address}<br>
+          전화: ${telHtml}<br>
+          <a href="${dirUrl}" target="_blank">길찾기</a> |
+          <a href="${shareUrl}" target="_blank">카카오맵 공유</a>
+        </div>
+      `);
+      infowindow.open(map, marker);
+    });
+
+    markers.push(marker);
+  });
+
+  document.title = `노포맛집 지도 (${inRange.length}곳)`;
+}
+
+function setCenter(lat, lng) {
+  myPos = { lat, lng };
+  map.setCenter(new kakao.maps.LatLng(lat, lng));
+  renderMarkers();
+}
+
+function initMap() {
+  map = new kakao.maps.Map(document.getElementById("map"), {
+    center: new kakao.maps.LatLng(myPos.lat, myPos.lng),
+    level: 5,
+  });
+  infowindow = new kakao.maps.InfoWindow({ removable: true });
+
+  fetch("data/노포_시흥시.json")
+    .then(r => r.json())
+    .then(data => {
+      allShops = data;
+      renderMarkers();
+    });
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => setCenter(pos.coords.latitude, pos.coords.longitude),
+      () => renderMarkers() // 위치 거부 시 기본 위치로 진행
+    );
+  } else {
+    renderMarkers();
+  }
+}
+
+document.querySelectorAll("#controls button[data-radius]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#controls button[data-radius]").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    radius = Number(btn.dataset.radius);
+    renderMarkers();
+  });
+});
+
+document.getElementById("trackBtn").addEventListener("click", function () {
+  tracking = !tracking;
+  this.textContent = tracking ? "위치 추적 ON" : "위치 추적 OFF";
+  this.classList.toggle("on", tracking);
+
+  if (tracking) {
+    watchId = navigator.geolocation.watchPosition(
+      pos => setCenter(pos.coords.latitude, pos.coords.longitude),
+      err => console.error(err),
+      { enableHighAccuracy: true }
+    );
+  } else if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+});
+
+kakao.maps.load(initMap);
+</script>
+</body>
+</html>
