@@ -434,11 +434,14 @@ function initMap() {
   Promise.all([
     fetch("data/노포_백년가게.json").then(r => r.json()),
     getDocs(collection(db, "shopOverrides")),
+    getDocs(collection(db, "customShops")).catch(() => ({ forEach: () => {} })),
   ])
-    .then(([data, overrideSnap]) => {
+    .then(([data, overrideSnap, customSnap]) => {
       const overrides = {};
       overrideSnap.forEach(d => { overrides[d.id] = d.data(); });
-      allShops = data.map(s => overrides[s.id] ? { ...s, ...overrides[s.id] } : s);
+      const customShops = [];
+      customSnap.forEach(d => customShops.push({ ...d.data(), id: d.id }));
+      allShops = data.map(s => overrides[s.id] ? { ...s, ...overrides[s.id] } : s).concat(customShops);
       renderMarkers();
       const focusId = new URLSearchParams(location.search).get("focus");
       const focusShop = focusId && allShops.find(s => s.id === focusId);
