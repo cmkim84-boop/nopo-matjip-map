@@ -339,7 +339,9 @@ function distanceM(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+const markerImageCache = {};
 function markerImage(grade) {
+  if (markerImageCache[grade]) return markerImageCache[grade];
   const color = grade === "찐노포" ? "B4451F" : "D9822B";
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="52" viewBox="0 0 42 52">
     <ellipse cx="21" cy="47" rx="8" ry="2.5" fill="#2B2420" opacity="0.22"/>
@@ -354,7 +356,9 @@ function markerImage(grade) {
     </g>
   </svg>`;
   const url = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
-  return new kakao.maps.MarkerImage(url, new kakao.maps.Size(42, 52), { offset: new kakao.maps.Point(21, 52) });
+  const image = new kakao.maps.MarkerImage(url, new kakao.maps.Size(42, 52), { offset: new kakao.maps.Point(21, 52) });
+  markerImageCache[grade] = image;
+  return image;
 }
 
 let locationOverlay = null;
@@ -377,30 +381,27 @@ function updateLocationOverlay(lat, lng) {
   }
 }
 
-function clearMarkers() {
-  clusterer.clear();
-  markers = [];
+function buildMarkers() {
+  allShops.forEach(shop => {
+    if (shop.marker) return;
+    const marker = new kakao.maps.Marker({
+      position: new kakao.maps.LatLng(shop.lat, shop.lng),
+      image: markerImage(shop.grade),
+    });
+    kakao.maps.event.addListener(marker, "click", () => openSheet(shop));
+    shop.marker = marker;
+  });
 }
 
 function renderMarkers() {
-  clearMarkers();
+  clusterer.clear();
   const inRange = allShops.filter(s =>
     distanceM(filterCenter.lat, filterCenter.lng, s.lat, s.lng) <= radius &&
     (category === "all" || s.foodCategory === category) &&
     (!favOnly || favoriteIds.has(s.id))
   );
 
-  inRange.forEach(shop => {
-    const marker = new kakao.maps.Marker({
-      position: new kakao.maps.LatLng(shop.lat, shop.lng),
-      image: markerImage(shop.grade),
-    });
-
-    kakao.maps.event.addListener(marker, "click", () => openSheet(shop));
-
-    markers.push(marker);
-  });
-
+  markers = inRange.map(s => s.marker);
   clusterer.addMarkers(markers);
   document.title = `노포맛집 지도 (${inRange.length}곳)`;
 }
@@ -444,6 +445,7 @@ function initMap() {
       const customShops = [];
       customSnap.forEach(d => customShops.push({ ...d.data(), id: d.id }));
       allShops = data.map(s => overrides[s.id] ? { ...s, ...overrides[s.id] } : s).concat(customShops);
+      buildMarkers();
       renderMarkers();
       const focusId = new URLSearchParams(location.search).get("focus");
       const focusShop = focusId && allShops.find(s => s.id === focusId);
