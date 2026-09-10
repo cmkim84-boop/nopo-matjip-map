@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>마이페이지 - 노포맛집 지도</title>
+<link rel="icon" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#B4451F">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
   :root {
@@ -38,6 +41,12 @@
   #profile img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--ink); }
   #profile .name { font-weight: 700; font-size: 15px; }
   #profile .email { font-size: 12px; color: #6B5C4E; }
+  #profile .info { flex: 1; min-width: 0; }
+  #profile .logoutBtn {
+    flex-shrink: 0; font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 12px;
+    padding: 7px 14px; border: 1.5px solid var(--ink); border-radius: 16px;
+    background: none; color: var(--ink); cursor: pointer;
+  }
 
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
   section { margin-bottom: 24px; }
@@ -89,7 +98,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged,
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
   getFirestore, getDocs, collection,
@@ -140,11 +149,13 @@ function renderCard(id, name, sub) {
 async function loadData(user) {
   profileEl.innerHTML = `
     <img src="${user.photoURL}" alt="">
-    <div>
+    <div class="info">
       <div class="name">${user.displayName}</div>
       <div class="email">${user.email}</div>
     </div>
+    <button class="logoutBtn" id="logoutBtn">로그아웃</button>
   `;
+  document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
 
   const shopsRes = await fetch("data/노포_백년가게.json");
   const shops = await shopsRes.json();

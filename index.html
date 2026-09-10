@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>노포맛집 지도</title>
+<meta name="description" content="우연히 만나는 동네 노포">
+<meta property="og:title" content="노포맛집지도">
+<meta property="og:description" content="우연히 만나는 동네 노포">
+<meta property="og:image" content="assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#B4451F">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
   :root {
@@ -26,23 +35,21 @@
     padding: 10px 14px 12px; padding-top: max(10px, env(safe-area-inset-top));
     box-shadow: 0 3px 8px rgba(43,36,32,.25); flex-shrink: 0;
   }
+  .headerTitle { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding-right: 60px; }
   #header h1 {
-    margin: 0; font-family: "Black Han Sans", sans-serif; font-size: 19px;
-    color: var(--cream); letter-spacing: .5px; font-weight: normal;
+    margin: 0; font-family: "Black Han Sans", sans-serif; font-size: 27px;
+    color: var(--cream); letter-spacing: .5px; font-weight: normal; line-height: 1;
   }
   #header p {
-    margin: 2px 0 0; font-family: "Noto Serif KR", serif; font-size: 11px; color: #F0C9A9;
+    margin: 0; font-family: "Noto Serif KR", serif; font-size: 14px; color: #F0C9A9;
   }
   #header { position: relative; }
-  #authArea { position: absolute; top: 10px; right: 14px; }
-  #authArea button {
-    font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 11px;
-    padding: 6px 10px; border: 1.5px solid var(--cream); border-radius: 16px;
-    background: transparent; color: var(--cream); cursor: pointer;
+  #authArea { position: absolute; top: 14px; right: 14px; }
+  #authArea button, #authArea a.myBtn {
+    display: inline-block; font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 12px;
+    padding: 7px 14px; border: 1.5px solid var(--cream); border-radius: 16px;
+    background: transparent; color: var(--cream); cursor: pointer; text-decoration: none;
   }
-  #authArea .userInfo { display: flex; align-items: center; gap: 6px; }
-  #authArea img { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--cream); }
-  #authArea a { color: var(--cream); font-size: 11px; font-weight: 700; text-decoration: underline; }
 
   #toolbar {
     display: flex; align-items: center; gap: 8px; flex-shrink: 0;
@@ -141,8 +148,10 @@
 </head>
 <body>
 <div id="header">
-  <h1>노포맛집지도</h1>
-  <p>우연히 만나는 동네 노포</p>
+  <div class="headerTitle">
+    <h1>노포맛집지도</h1>
+    <p>우연히 만나는 동네 노포</p>
+  </div>
   <div id="authArea"></div>
 </div>
 <div id="toolbar">
@@ -175,7 +184,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+  getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, deleteDoc, getDoc, getDocs, collection, serverTimestamp,
@@ -202,14 +211,7 @@ const authArea = document.getElementById("authArea");
 
 function renderAuthArea() {
   if (currentUser) {
-    authArea.innerHTML = `
-      <div class="userInfo">
-        <img src="${currentUser.photoURL}" alt="">
-        <a href="my.html">마이페이지</a>
-        <button id="logoutBtn">로그아웃</button>
-      </div>
-    `;
-    document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+    authArea.innerHTML = `<a class="myBtn" href="my.html">MY</a>`;
   } else {
     authArea.innerHTML = `<button id="loginBtn">Google로 로그인</button>`;
     document.getElementById("loginBtn").addEventListener("click", () => signInWithPopup(auth, googleProvider));

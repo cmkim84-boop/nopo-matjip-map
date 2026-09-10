@@ -1,0 +1,13 @@
+{
+  "name": "노포맛집지도",
+  "short_name": "노포맛집지도",
+  "description": "우연히 만나는 동네 노포",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#F4EBDD",
+  "theme_color": "#B4451F",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
