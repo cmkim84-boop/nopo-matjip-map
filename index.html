@@ -97,6 +97,11 @@
   #sheet .amenities span {
     font-size: 11px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 20px; color: #6B5C4E;
   }
+  #sheet .photos { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; }
+  #sheet .photos img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid var(--ink); flex-shrink: 0; }
+  #sheet .menu { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+  #sheet .menuItem { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+  #sheet .menuItem span:last-child { color: #6B5C4E; }
   #sheet .actions { display: flex; gap: 8px; margin-top: 14px; }
   #sheet .actions a, #sheet .actions button {
     flex: 1; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center;
@@ -278,6 +283,12 @@ function openSheet(shop) {
   const amenitiesHtml = shop.amenities && shop.amenities.length
     ? `<div class="amenities">${shop.amenities.map(a => `<span>${a}</span>`).join("")}</div>`
     : "";
+  const photosHtml = shop.photos && shop.photos.length
+    ? `<div class="photos">${shop.photos.map(url => `<img src="${url}">`).join("")}</div>`
+    : "";
+  const menuHtml = shop.menu && shop.menu.length
+    ? `<div class="menu">${shop.menu.map(m => `<div class="menuItem"><span>${m.name}</span><span>${m.price || ""}</span></div>`).join("")}</div>`
+    : "";
   const isFav = favoriteIds.has(shop.id);
   const visitCount = visitCounts[shop.id] || 0;
   const visitText = visitCount > 0 ? `다녀왔어요 (${visitCount})` : "다녀왔어요";
@@ -295,6 +306,8 @@ function openSheet(shop) {
     <hr>
     <div class="info">${shop.address}<br>전화: ${telHtml}${hoursHtml}</div>
     ${introHtml}
+    ${photosHtml}
+    ${menuHtml}
     ${amenitiesHtml}
     <div class="actions">
       <button class="favBtn${isFav ? " on" : ""}">${isFav ? "★ 즐겨찾기됨" : "☆ 즐겨찾기"}</button>
@@ -418,10 +431,14 @@ function initMap() {
     gridSize: 60,
   });
 
-  fetch("data/노포_백년가게.json")
-    .then(r => r.json())
-    .then(data => {
-      allShops = data;
+  Promise.all([
+    fetch("data/노포_백년가게.json").then(r => r.json()),
+    getDocs(collection(db, "shopOverrides")),
+  ])
+    .then(([data, overrideSnap]) => {
+      const overrides = {};
+      overrideSnap.forEach(d => { overrides[d.id] = d.data(); });
+      allShops = data.map(s => overrides[s.id] ? { ...s, ...overrides[s.id] } : s);
       renderMarkers();
       const focusId = new URLSearchParams(location.search).get("focus");
       const focusShop = focusId && allShops.find(s => s.id === focusId);
