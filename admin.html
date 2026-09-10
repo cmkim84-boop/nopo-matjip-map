@@ -38,6 +38,16 @@
     font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 13px; box-sizing: border-box;
     background: var(--brick); color: var(--cream); cursor: pointer;
   }
+  #shopTabs {
+    display: flex; border-bottom: 2px solid var(--line);
+  }
+  #shopTabs .shopTab {
+    flex: 1; padding: 8px 4px; border: none; border-right: 1px solid var(--line);
+    background: #fff; font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 12px;
+    color: var(--ink); cursor: pointer;
+  }
+  #shopTabs .shopTab:last-child { border-right: none; }
+  #shopTabs .shopTab.active { background: var(--cream); color: var(--brick); }
   .shopRow .customMark { color: var(--orange); font-weight: 700; }
   .shopRow.selected .customMark { color: var(--cream); }
   #deleteShopBtn {
@@ -104,6 +114,11 @@
 <div id="layout" style="display:none;">
   <div id="shopListPane">
     <button type="button" id="addShopBtn">+ 새 가게 등록</button>
+    <div id="shopTabs">
+      <button type="button" class="shopTab active" data-tab="all">전체</button>
+      <button type="button" class="shopTab" data-tab="base">백년가게</button>
+      <button type="button" class="shopTab" data-tab="custom">등록가게</button>
+    </div>
     <input id="shopSearch" type="text" placeholder="가게명 검색">
     <div id="shopList"></div>
   </div>
@@ -156,6 +171,7 @@ let overrideCache = {};
 let selectedShop = null;
 let currentPhotos = [];
 let kakaoReady = null;
+let activeTab = "all";
 
 function ensureKakao() {
   if (!kakaoReady) kakaoReady = new Promise(resolve => kakao.maps.load(resolve));
@@ -177,7 +193,10 @@ async function geocodeAddress(address) {
 
 function renderShopList(filter) {
   const q = (filter || "").trim();
-  const list = q ? allShops.filter(s => s.name.includes(q)) : allShops;
+  let list = allShops;
+  if (activeTab === "base") list = list.filter(s => !s.isCustom);
+  if (activeTab === "custom") list = list.filter(s => s.isCustom);
+  if (q) list = list.filter(s => s.name.includes(q));
   shopListEl.innerHTML = list.slice(0, 300).map(s => `
     <div class="shopRow${selectedShop && selectedShop.id === s.id ? " selected" : ""}" data-id="${s.id}">
       <div>${s.name} ${s.isCustom ? '<span class="customMark">등록</span>' : (overrideCache[s.id] ? '<span class="overrideMark">●</span>' : "")}</div>
@@ -405,6 +424,14 @@ async function deleteCustomShop() {
 
 shopSearchEl.addEventListener("input", () => renderShopList(shopSearchEl.value));
 document.getElementById("addShopBtn").addEventListener("click", selectNewShop);
+document.querySelectorAll("#shopTabs .shopTab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#shopTabs .shopTab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeTab = btn.dataset.tab;
+    renderShopList(shopSearchEl.value);
+  });
+});
 
 async function init() {
   const res = await fetch("data/노포_백년가게.json");
