@@ -42,6 +42,7 @@
   }
   #authArea .userInfo { display: flex; align-items: center; gap: 6px; }
   #authArea img { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--cream); }
+  #authArea a { color: var(--cream); font-size: 11px; font-weight: 700; text-decoration: underline; }
 
   #toolbar {
     display: flex; align-items: center; gap: 8px; flex-shrink: 0;
@@ -200,6 +201,7 @@ function renderAuthArea() {
     authArea.innerHTML = `
       <div class="userInfo">
         <img src="${currentUser.photoURL}" alt="">
+        <a href="my.html">마이페이지</a>
         <button id="logoutBtn">로그아웃</button>
       </div>
     `;
@@ -251,6 +253,7 @@ onAuthStateChanged(auth, async (user) => {
   renderAuthArea();
   await loadUserData();
   if (clusterer) renderMarkers();
+  if (openSheetShop) openSheet(openSheetShop);
 });
 
 const DEFAULT_CENTER = { lat: 37.3800, lng: 126.8030 }; // 시흥시청 근처 fallback
@@ -262,8 +265,10 @@ let allShops = [];
 let markers = [];
 let clusterer;
 const sheet = document.getElementById("sheet");
+let openSheetShop = null;
 
 function openSheet(shop) {
+  openSheetShop = shop;
   const dirUrl = `https://map.kakao.com/link/to/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
   const telHtml = shop.phone ? `<a href="tel:${shop.phone}">${shop.phone}</a>` : "정보 없음";
   const shareUrl = `https://map.kakao.com/link/map/${encodeURIComponent(shop.name)},${shop.lat},${shop.lng}`;
@@ -309,6 +314,7 @@ function openSheet(shop) {
 
 function closeSheet() {
   sheet.classList.remove("open");
+  openSheetShop = null;
 }
 
 function distanceM(lat1, lng1, lat2, lng2) {
@@ -410,7 +416,19 @@ function initMap() {
     .then(data => {
       allShops = data;
       renderMarkers();
+      const focusId = new URLSearchParams(location.search).get("focus");
+      const focusShop = focusId && allShops.find(s => s.id === focusId);
+      if (focusShop) {
+        radius = 1000;
+        document.querySelectorAll("#toolbar button[data-radius]").forEach(b =>
+          b.classList.toggle("active", b.dataset.radius === "1000"));
+        setCenter(focusShop.lat, focusShop.lng);
+        map.setLevel(4);
+        openSheet(focusShop);
+      }
     });
+
+  if (new URLSearchParams(location.search).get("focus")) return;
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(

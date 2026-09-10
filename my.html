@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>마이페이지 - 노포맛집 지도</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --brick: #B4451F;
+    --orange: #D9822B;
+    --cream: #F4EBDD;
+    --ink: #2B2420;
+    --line: #D8C6AC;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; min-height: 100dvh;
+    font-family: "Noto Sans KR", sans-serif; color: var(--ink); background: var(--cream);
+  }
+  #header {
+    background: var(--brick); border-bottom: 3px solid var(--ink);
+    padding: 10px 14px 12px; padding-top: max(10px, env(safe-area-inset-top));
+    box-shadow: 0 3px 8px rgba(43,36,32,.25); position: relative;
+  }
+  #header h1 {
+    margin: 0; font-family: "Black Han Sans", sans-serif; font-size: 19px;
+    color: var(--cream); letter-spacing: .5px; font-weight: normal;
+  }
+  #header a.back {
+    position: absolute; top: 14px; right: 14px; color: var(--cream);
+    font-size: 12px; font-weight: 700; text-decoration: underline;
+  }
+  #profile {
+    display: flex; align-items: center; gap: 10px; padding: 16px;
+    border-bottom: 2px solid var(--line);
+  }
+  #profile img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--ink); }
+  #profile .name { font-weight: 700; font-size: 15px; }
+  #profile .email { font-size: 12px; color: #6B5C4E; }
+
+  main { padding: 16px; max-width: 640px; margin: 0 auto; }
+  section { margin-bottom: 24px; }
+  section h2 {
+    font-family: "Noto Serif KR", serif; font-size: 15px; margin: 0 0 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  section h2 .count { font-size: 12px; color: #6B5C4E; font-weight: 400; }
+
+  .card {
+    display: flex; align-items: center; gap: 10px; background: #fff;
+    border: 2px solid var(--ink); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+  }
+  .card .info { flex: 1; min-width: 0; }
+  .card .name { font-weight: 700; font-size: 14px; }
+  .card .sub { font-size: 12px; color: #6B5C4E; margin-top: 2px; }
+  .card a.view {
+    flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--brick);
+    border: 1.5px solid var(--brick); border-radius: 16px; padding: 6px 10px; text-decoration: none;
+  }
+  .empty { font-size: 13px; color: #6B5C4E; padding: 20px 0; text-align: center; }
+  .loginPrompt {
+    text-align: center; padding: 60px 20px; font-size: 14px; color: #6B5C4E;
+  }
+  .loginPrompt button {
+    margin-top: 14px; font-family: "Noto Sans KR", sans-serif; font-weight: 700; font-size: 13px;
+    padding: 10px 18px; border: 2px solid var(--ink); border-radius: 20px; background: var(--cream);
+    color: var(--ink); cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>마이페이지</h1>
+  <a class="back" href="index.html">← 지도로</a>
+</div>
+<div id="profile"></div>
+<main>
+  <section>
+    <h2>★ 즐겨찾기 <span class="count" id="favCount"></span></h2>
+    <div id="favList"></div>
+  </section>
+  <section>
+    <h2>다녀온 곳 <span class="count" id="visitCount"></span></h2>
+    <div id="visitList"></div>
+  </section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import {
+  getFirestore, getDocs, collection,
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDC97LjxznZ_pEUP0RkRxHMZ4UQul9HiEA",
+  authDomain: "nopo-matjip-map.firebaseapp.com",
+  projectId: "nopo-matjip-map",
+  storageBucket: "nopo-matjip-map.firebasestorage.app",
+  messagingSenderId: "1009076485496",
+  appId: "1:1009076485496:web:7438ed95e1a738f8ca1c8d",
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const googleProvider = new GoogleAuthProvider();
+
+const profileEl = document.getElementById("profile");
+const favListEl = document.getElementById("favList");
+const visitListEl = document.getElementById("visitList");
+const favCountEl = document.getElementById("favCount");
+const visitCountEl = document.getElementById("visitCount");
+const main = document.querySelector("main");
+
+let shopsById = {};
+
+function timeAgo(ts) {
+  if (!ts) return "";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
+}
+
+function renderCard(id, name, sub) {
+  const shop = shopsById[id];
+  const viewUrl = shop ? `index.html?focus=${encodeURIComponent(id)}` : null;
+  return `
+    <div class="card">
+      <div class="info">
+        <div class="name">${name}</div>
+        <div class="sub">${sub}</div>
+      </div>
+      ${viewUrl ? `<a class="view" href="${viewUrl}">지도에서 보기</a>` : ""}
+    </div>
+  `;
+}
+
+async function loadData(user) {
+  profileEl.innerHTML = `
+    <img src="${user.photoURL}" alt="">
+    <div>
+      <div class="name">${user.displayName}</div>
+      <div class="email">${user.email}</div>
+    </div>
+  `;
+
+  const shopsRes = await fetch("data/노포_백년가게.json");
+  const shops = await shopsRes.json();
+  shopsById = Object.fromEntries(shops.map(s => [s.id, s]));
+
+  const favSnap = await getDocs(collection(db, "users", user.uid, "favorites"));
+  const favs = favSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  favCountEl.textContent = `${favs.length}곳`;
+  favListEl.innerHTML = favs.length
+    ? favs.map(f => renderCard(f.id, f.name, f.address || "")).join("")
+    : `<div class="empty">아직 즐겨찾기한 곳이 없어요.</div>`;
+
+  const visitSnap = await getDocs(collection(db, "users", user.uid, "visits"));
+  const visits = visitSnap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.lastVisitedAt?.seconds || 0) - (a.lastVisitedAt?.seconds || 0));
+  visitCountEl.textContent = `${visits.length}곳`;
+  visitListEl.innerHTML = visits.length
+    ? visits.map(v => renderCard(v.id, v.name, `${v.count}번 방문 · 최근 ${timeAgo(v.lastVisitedAt)}`)).join("")
+    : `<div class="empty">아직 방문 기록이 없어요.</div>`;
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    main.style.display = "none";
+    profileEl.innerHTML = `
+      <div class="loginPrompt" style="width:100%;">
+        로그인하면 즐겨찾기와 방문 기록을 볼 수 있어요.
+        <br><button id="loginBtn">Google로 로그인</button>
+      </div>
+    `;
+    document.getElementById("loginBtn").addEventListener("click", () => signInWithPopup(auth, googleProvider));
+    return;
+  }
+  main.style.display = "block";
+  loadData(user);
+});
+</script>
+</body>
+</html>
