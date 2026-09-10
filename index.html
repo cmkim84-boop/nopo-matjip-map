@@ -56,8 +56,7 @@
     white-space: nowrap;
   }
   #toolbar button.active { background: var(--brick); color: var(--cream); border-color: var(--brick); }
-  #trackBtn { margin-left: auto; }
-  #trackBtn.on { background: var(--brick); color: var(--cream); border-color: var(--brick); }
+  #locateBtn { margin-left: auto; }
 
   #legend {
     display: flex; gap: 14px; flex-shrink: 0;
@@ -145,7 +144,7 @@
   <button data-radius="500" class="active">500m</button>
   <button data-radius="750">750m</button>
   <button data-radius="1000">1000m</button>
-  <button id="trackBtn">위치 추적 OFF</button>
+  <button id="locateBtn">현재 위치</button>
 </div>
 <div id="legend">
   <div><span class="dot" style="background: var(--orange);"></span>동네 터줏대감 10~20년</div>
@@ -258,7 +257,7 @@ onAuthStateChanged(auth, async (user) => {
 
 const DEFAULT_CENTER = { lat: 37.3800, lng: 126.8030 }; // 시흥시청 근처 fallback
 
-let map, myPos = DEFAULT_CENTER, radius = 500, tracking = false, watchId = null;
+let map, myPos = null, filterCenter = DEFAULT_CENTER, radius = 500;
 let category = "all";
 let favOnly = false;
 let allShops = [];
@@ -371,7 +370,7 @@ function clearMarkers() {
 function renderMarkers() {
   clearMarkers();
   const inRange = allShops.filter(s =>
-    distanceM(myPos.lat, myPos.lng, s.lat, s.lng) <= radius &&
+    distanceM(filterCenter.lat, filterCenter.lng, s.lat, s.lng) <= radius &&
     (category === "all" || s.foodCategory === category) &&
     (!favOnly || favoriteIds.has(s.id))
   );
@@ -391,19 +390,27 @@ function renderMarkers() {
   document.title = `노포맛집 지도 (${inRange.length}곳)`;
 }
 
-function setCenter(lat, lng) {
-  myPos = { lat, lng };
+function panTo(lat, lng) {
   map.setCenter(new kakao.maps.LatLng(lat, lng));
+}
+
+function goToMyLocation(lat, lng) {
+  myPos = { lat, lng };
   updateLocationOverlay(lat, lng);
-  renderMarkers();
+  panTo(lat, lng);
 }
 
 function initMap() {
   map = new kakao.maps.Map(document.getElementById("map"), {
-    center: new kakao.maps.LatLng(myPos.lat, myPos.lng),
+    center: new kakao.maps.LatLng(filterCenter.lat, filterCenter.lng),
     level: 5,
   });
   kakao.maps.event.addListener(map, "click", closeSheet);
+  kakao.maps.event.addListener(map, "idle", () => {
+    const c = map.getCenter();
+    filterCenter = { lat: c.getLat(), lng: c.getLng() };
+    renderMarkers();
+  });
   clusterer = new kakao.maps.MarkerClusterer({
     map,
     averageCenter: true,
@@ -422,7 +429,7 @@ function initMap() {
         radius = 1000;
         document.querySelectorAll("#toolbar button[data-radius]").forEach(b =>
           b.classList.toggle("active", b.dataset.radius === "1000"));
-        setCenter(focusShop.lat, focusShop.lng);
+        panTo(focusShop.lat, focusShop.lng);
         map.setLevel(4);
         openSheet(focusShop);
       }
@@ -432,11 +439,9 @@ function initMap() {
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      pos => setCenter(pos.coords.latitude, pos.coords.longitude),
-      () => renderMarkers() // 위치 거부 시 기본 위치로 진행
+      pos => goToMyLocation(pos.coords.latitude, pos.coords.longitude),
+      () => {} // 위치 거부 시 기본 위치로 진행
     );
-  } else {
-    renderMarkers();
   }
 }
 
@@ -465,21 +470,13 @@ document.querySelectorAll("#toolbar button[data-radius]").forEach(btn => {
   });
 });
 
-document.getElementById("trackBtn").addEventListener("click", function () {
-  tracking = !tracking;
-  this.textContent = tracking ? "위치 추적 ON" : "위치 추적 OFF";
-  this.classList.toggle("on", tracking);
-
-  if (tracking) {
-    watchId = navigator.geolocation.watchPosition(
-      pos => setCenter(pos.coords.latitude, pos.coords.longitude),
-      err => console.error(err),
-      { enableHighAccuracy: true }
-    );
-  } else if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
+document.getElementById("locateBtn").addEventListener("click", function () {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    pos => goToMyLocation(pos.coords.latitude, pos.coords.longitude),
+    err => console.error(err),
+    { enableHighAccuracy: true }
+  );
 });
 
 kakao.maps.load(initMap);
