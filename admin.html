@@ -117,8 +117,7 @@
     <button type="button" id="addShopBtn">+ 새 가게 등록</button>
     <div id="shopTabs">
       <button type="button" class="shopTab active" data-tab="all">전체</button>
-      <button type="button" class="shopTab" data-tab="baeknyeon">백년가게</button>
-      <button type="button" class="shopTab" data-tab="oraegage">오래가게</button>
+      <button type="button" class="shopTab" data-tab="base">백년가게</button>
       <button type="button" class="shopTab" data-tab="custom">등록가게</button>
     </div>
     <input id="shopSearch" type="text" placeholder="가게명 검색">
@@ -196,8 +195,7 @@ async function geocodeAddress(address) {
 function renderShopList(filter) {
   const q = (filter || "").trim();
   let list = allShops;
-  if (activeTab === "baeknyeon") list = list.filter(s => s.source && s.source.includes("백년가게"));
-  if (activeTab === "oraegage") list = list.filter(s => s.source && s.source.includes("오래가게"));
+  if (activeTab === "base") list = list.filter(s => !s.isCustom);
   if (activeTab === "custom") list = list.filter(s => s.isCustom);
   if (q) list = list.filter(s => s.name.includes(q));
   shopListEl.innerHTML = list.slice(0, 300).map(s => `
@@ -437,7 +435,7 @@ document.querySelectorAll("#shopTabs .shopTab").forEach(btn => {
 });
 
 async function init() {
-  const res = await fetch("data/노포.json");
+  const res = await fetch("data/노포_백년가게.json");
   const baseShops = await res.json();
   const customSnap = await getDocs(collection(db, "customShops")).catch(() => ({ forEach: () => {} }));
   const customShops = [];

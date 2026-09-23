@@ -157,7 +157,7 @@ async function loadData(user) {
   `;
   document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
 
-  const shopsRes = await fetch("data/노포.json");
+  const shopsRes = await fetch("data/노포_백년가게.json");
   const shops = await shopsRes.json();
   shopsById = Object.fromEntries(shops.map(s => [s.id, s]));
 
