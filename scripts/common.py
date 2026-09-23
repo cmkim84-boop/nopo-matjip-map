@@ -24,9 +24,12 @@ def categorize(name, intro):
     return "기타"
 
 
+DEFAULT_HEADERS = {"User-Agent": "nopo-matjip-map/1.0 (https://github.com/cmkim84-boop/nopo-matjip-map)"}
+
+
 def fetch(url, data=None, headers=None):
     body = urllib.parse.urlencode(data).encode() if data else None
-    req = urllib.request.Request(url, data=body, headers=headers or {})
+    req = urllib.request.Request(url, data=body, headers={**DEFAULT_HEADERS, **(headers or {})})
     for attempt in range(3):
         try:
             with urllib.request.urlopen(req, timeout=15) as r:
