@@ -1,0 +1,502 @@
+[
+  {
+    "id": "27823d2d3436",
+    "name": "Apple House",
+    "address": "서울 동작구 동작대로27다길 29",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 39,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Dongjak구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.486275,
+    "lng": 126.980575
+  },
+  {
+    "id": "7091bf8aeab5",
+    "name": "Bonghwa Mukjip",
+    "address": "서울 성북구 아리랑로19길 46-2",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 44,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Seongbuk구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.602737,
+    "lng": 127.010722
+  },
+  {
+    "id": "07f9495e1bde",
+    "name": "Daegu Sesame Oil",
+    "address": "서울 종로구 계동길 67",
+    "bizType": "Food store",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 51,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jongno구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.580295,
+    "lng": 126.986668
+  },
+  {
+    "id": "3220c61c930a",
+    "name": "Darak",
+    "address": "서울 중구 수표로10길 19",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": null,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Mapo구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.563744,
+    "lng": 126.991421
+  },
+  {
+    "id": "8cd774cee321",
+    "name": "Dongbu Goryeo Bakery",
+    "address": "서울 중랑구 망우로 388",
+    "bizType": "Bakery",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 52,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jungnang구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.598503,
+    "lng": 127.095141
+  },
+  {
+    "id": "0eb27c2f844b",
+    "name": "Eulji Dabang",
+    "address": "서울 중구 을지로 124-1",
+    "bizType": "Coffeehouse",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 41,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jung구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.566162,
+    "lng": 126.99178
+  },
+  {
+    "id": "e539ab38df37",
+    "name": "Figaro",
+    "address": "서울 종로구 종로 344",
+    "bizType": "Pub",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": null,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Gwanak구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.572705,
+    "lng": 127.016097
+  },
+  {
+    "id": "0d503438152c",
+    "name": "Gami Bunsik",
+    "address": "서울 서대문구 이화여대8길 2",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 51,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Seodaemun구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.558653,
+    "lng": 126.945919
+  },
+  {
+    "id": "e4e6e35685bd",
+    "name": "Gonghang Kalguksu",
+    "address": "서울 강서구 공항대로 18-1",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 47,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Gangseo구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.560972,
+    "lng": 126.809158
+  },
+  {
+    "id": "0f45d992ff7f",
+    "name": "Gyeonggi Tteokjip",
+    "address": "서울 마포구 동교로9길 24",
+    "bizType": "Tteok store",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 68,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Mapo구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.555044,
+    "lng": 126.910305
+  },
+  {
+    "id": "3e3221fa0811",
+    "name": "Hakrim Dabang",
+    "address": "서울 종로구 대학로 119",
+    "bizType": "Coffeehouse",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 70,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jongno구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.58195,
+    "lng": 127.001657
+  },
+  {
+    "id": "678905b9b402",
+    "name": "Hyoja Bakery",
+    "address": "서울 종로구 필운대로 54",
+    "bizType": "Bakery",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 39,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jongno구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.580941,
+    "lng": 126.968667
+  },
+  {
+    "id": "cb507ebcaaf2",
+    "name": "Jidaebang",
+    "address": "서울 종로구 인사동길 33",
+    "bizType": "Tea shop",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 44,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jongno구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.573486,
+    "lng": 126.98555
+  },
+  {
+    "id": "12b50160be41",
+    "name": "Mirim Bunsik",
+    "address": "서울 관악구 호암로 534",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 38,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Gwanak구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.465283,
+    "lng": 126.931671
+  },
+  {
+    "id": "8a59c668401b",
+    "name": "Myeongga Tteokjip",
+    "address": "서울 송파구 석촌호수로12길 7",
+    "bizType": "Tteok store",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 46,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Songpa구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.509025,
+    "lng": 127.085597
+  },
+  {
+    "id": "df7728f20eae",
+    "name": "Nagwon Rice Cake",
+    "address": "서울 용산구 회나무로 18",
+    "bizType": "Tteok store",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 116,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jongno구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.538914,
+    "lng": 126.988853
+  },
+  {
+    "id": "480be6c8bc65",
+    "name": "Napoleon Bakery",
+    "address": "서울 성북구 성북로 7",
+    "bizType": "Bakery",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 58,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Seongbuk구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.588899,
+    "lng": 127.005096
+  },
+  {
+    "id": "5bc172ee0161",
+    "name": "Peter Pan 1978",
+    "address": "서울 서대문구 증가로 10",
+    "bizType": "Bakery",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 48,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Seodaemun구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.569338,
+    "lng": 126.931766
+  },
+  {
+    "id": "bf805fd21af8",
+    "name": "Pyeongtaek Rice Store",
+    "address": "서울 금천구 독산로40길 27-5",
+    "bizType": "Food store",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 38,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Geumcheon구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.460605,
+    "lng": 126.906045
+  },
+  {
+    "id": "cf9c3c9ced7e",
+    "name": "Sahara",
+    "address": "서울 광진구 광장로 78",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 38,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Mapo구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.547611,
+    "lng": 127.105639
+  },
+  {
+    "id": "70e7ffda593f",
+    "name": "Seoul Sanghoe",
+    "address": "서울 종로구 우정국로2길 17",
+    "bizType": "Food store",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 55,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jung구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.569636,
+    "lng": 126.984062
+  },
+  {
+    "id": "f8830e2b5136",
+    "name": "Sinheung Sanghoe",
+    "address": "서울 종로구 종로32길 22",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 51,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Yeongdeungpo구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.569894,
+    "lng": 127.000986
+  },
+  {
+    "id": "526a8421bb5e",
+    "name": "Sinrakwon",
+    "address": "서울 동대문구 전농로20길 2",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 61,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Dongdaemun구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.578905,
+    "lng": 127.05717
+  },
+  {
+    "id": "aec21a02ab9c",
+    "name": "Sonmat Gimbap",
+    "address": "서울 종로구 자하문로15길 20",
+    "bizType": "Restaurant",
+    "foodCategory": "기타",
+    "openedDate": null,
+    "yearsOpen": 46,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Jongno구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.580726,
+    "lng": 126.969814
+  },
+  {
+    "id": "c42a1644fc15",
+    "name": "Teobangnae",
+    "address": "서울 동작구 흑석로 101-7",
+    "bizType": "Coffeehouse",
+    "foodCategory": "카페/베이커리",
+    "openedDate": null,
+    "yearsOpen": 43,
+    "grade": null,
+    "hours": null,
+    "phone": null,
+    "homepage": null,
+    "amenities": [],
+    "intro": "서울시 오래가게 선정 (Dongjak구)",
+    "source": [
+      "오래가게"
+    ],
+    "lat": 37.508008,
+    "lng": 126.960803
+  }
+]
