@@ -361,6 +361,23 @@ function markerImage(grade) {
   return image;
 }
 
+function drawServiceAreaMask(boundary) {
+  const worldRect = [
+    new kakao.maps.LatLng(20, 100),
+    new kakao.maps.LatLng(20, 150),
+    new kakao.maps.LatLng(50, 150),
+    new kakao.maps.LatLng(50, 100),
+  ];
+  const seoulHole = boundary.map(([lng, lat]) => new kakao.maps.LatLng(lat, lng));
+  new kakao.maps.Polygon({
+    map,
+    path: [worldRect, seoulHole],
+    strokeWeight: 0,
+    fillColor: "#2B2420",
+    fillOpacity: 0.45,
+  });
+}
+
 let locationOverlay = null;
 
 function updateLocationOverlay(lat, lng) {
@@ -433,6 +450,8 @@ function initMap() {
     minLevel: 6,
     gridSize: 60,
   });
+
+  fetch("data/서울경계.json").then(r => r.json()).then(drawServiceAreaMask);
 
   Promise.all([
     fetch("data/노포_백년가게.json").then(r => r.json()),
