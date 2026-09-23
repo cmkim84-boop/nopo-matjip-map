@@ -84,6 +84,14 @@
   }
   #categoryBar button.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 
+  #outOfAreaNotice {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--cream); font-size: 12px; font-weight: 700;
+    padding: 8px 16px; border-radius: 20px; box-shadow: 0 2px 6px rgba(43,36,32,.35);
+    white-space: nowrap; z-index: 15; display: none;
+  }
+  #outOfAreaNotice.show { display: block; }
+
   #sheet {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
     background: var(--cream); border-top: 3px solid var(--ink);
@@ -178,6 +186,7 @@
   <button id="favOnlyBtn" data-category="__fav__">★ 즐겨찾기만</button>
 </div>
 <div id="map"></div>
+<div id="outOfAreaNotice">현재는 서울 지역만 서비스하고 있어요</div>
 <div id="sheet"></div>
 
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4049230daf71eeaa331a033be7ed6920&autoload=false&libraries=services,clusterer"></script>
@@ -361,7 +370,11 @@ function markerImage(grade) {
   return image;
 }
 
+let seoulBoundary = null;
+const outOfAreaNoticeEl = document.getElementById("outOfAreaNotice");
+
 function drawServiceAreaMask(boundary) {
+  seoulBoundary = boundary;
   const worldRect = [
     new kakao.maps.LatLng(20, 100),
     new kakao.maps.LatLng(20, 150),
@@ -376,6 +389,26 @@ function drawServiceAreaMask(boundary) {
     fillColor: "#2B2420",
     fillOpacity: 0.45,
   });
+  updateOutOfAreaNotice();
+}
+
+function pointInSeoul(lat, lng) {
+  let inside = false;
+  for (let i = 0, j = seoulBoundary.length - 1; i < seoulBoundary.length; j = i++) {
+    const [lngI, latI] = seoulBoundary[i];
+    const [lngJ, latJ] = seoulBoundary[j];
+    const crosses = (latI > lat) !== (latJ > lat) &&
+      lng < (lngJ - lngI) * (lat - latI) / (latJ - latI) + lngI;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
+function updateOutOfAreaNotice() {
+  if (!seoulBoundary) return;
+  const mapRect = document.getElementById("map").getBoundingClientRect();
+  outOfAreaNoticeEl.style.top = `${mapRect.top + 14}px`;
+  outOfAreaNoticeEl.classList.toggle("show", !pointInSeoul(filterCenter.lat, filterCenter.lng));
 }
 
 let locationOverlay = null;
@@ -443,6 +476,7 @@ function initMap() {
     const c = map.getCenter();
     filterCenter = { lat: c.getLat(), lng: c.getLng() };
     renderMarkers();
+    updateOutOfAreaNotice();
   });
   clusterer = new kakao.maps.MarkerClusterer({
     map,
